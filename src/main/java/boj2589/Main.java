@@ -3,9 +3,7 @@ package boj2589;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.StringTokenizer;
@@ -18,62 +16,45 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         getInput();
-        processAllPair(0, 0, new ArrayList<>(2));
-        System.out.println(maxShortDistance);
-    }
-
-    private static void processAllPair(
-            int cnt,
-            int start,
-            List<Pos> posList
-    ) {
-        if (cnt == 2) {
-            calculateShortDistance(posList.get(0), posList.get(1));
-            return;
-        }
-
-        for (int i = start; i < n * m; i++) {
-            int y = i / m;
-            int x = i % m;
-            if (map[y][x]) {
-                posList.add(new Pos(x, y));
-                processAllPair(cnt + 1, i + 1, posList);
-                posList.remove(posList.size() - 1);
-            }
-        }
-    }
-
-    private static void calculateShortDistance(
-            Pos pos1,
-            Pos pos2
-    ) {
-        boolean[][] visit = new boolean[n][m];
-        visit[pos1.y][pos1.x] = true;
-        Queue<Pos> queue = new LinkedList<>();
-        queue.offer(pos1);
-        while (!queue.isEmpty()) {
-            Pos thisPos = queue.poll();
-            if (thisPos.equals(pos2)) {
-                maxShortDistance = Math.max(maxShortDistance, thisPos.getDistance());
-                break;
-            }
-
-            for (int dir = 0; dir < 4; dir++) {
-                int newX = thisPos.x + offset[dir][0];
-                int newY = thisPos.y + offset[dir][1];
-                if (newY < n && newY >= 0 &&
-                    newX < m && newX >=0 &&
-                    map[newY][newX] &&
-                    !visit[newY][newX]
-                ) {
-                    visit[newY][newX] = true;
-                    Pos newPos = new Pos(newX, newY);
-                    newPos.setDistance(thisPos.distance + 1);
-                    queue.add(newPos);
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                if (map[i][j]) {
+                    bfs(i, j);
                 }
             }
         }
+        System.out.println(maxShortDistance);
     }
+
+    private static void bfs(
+            int y,
+            int x
+    ) {
+        int maxDistance = 0;
+        boolean[][] visit = new boolean[n][m];
+        visit[y][x] = true;
+        Queue<Pos> queue = new LinkedList<>();
+        queue.offer(new Pos(x, y));
+        while (!queue.isEmpty()) {
+            Pos thisPos = queue.poll();
+            maxDistance = Math.max(maxDistance, thisPos.getDistance());
+            for (int dir = 0; dir < 4; dir++) {
+                int nextY = thisPos.y + offset[dir][0];
+                int nextX = thisPos.x + offset[dir][1];
+                if (nextY >= 0 && nextY <  n && nextX >= 0 && nextX < m &&
+                    map[nextY][nextX] && !visit[nextY][nextX]
+                ) {
+                    visit[nextY][nextX] = true;
+                    Pos nextPos = new Pos(nextX, nextY);
+                    nextPos.setDistance(thisPos.getDistance() + 1);
+                    queue.offer(nextPos);
+                }
+            }
+        }
+
+        maxShortDistance = Math.max(maxDistance, maxShortDistance);
+    }
+
 
     private static int[][] offset = {
             {0, 1}, {1, 0}, {-1, 0}, {0, -1}
